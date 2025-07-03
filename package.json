@@ -1,0 +1,22 @@
+{
+  "name": "playwrightfirsttest",
+  "version": "1.0.0",
+  "description": "The first test with playwright",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragosPorto/PlaywrightFirstTest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dragosPorto/PlaywrightFirstTest/issues"
+  },
+  "homepage": "https://github.com/dragosPorto/PlaywrightFirstTest#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.53.2",
+    "@types/node": "^24.0.10"
+  }
+}
