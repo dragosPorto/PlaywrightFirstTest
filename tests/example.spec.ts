@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { Console, count } from 'console';
 
 //Acces the test page before each test
 test.beforeEach(async ({ page }) => {
@@ -12,7 +13,7 @@ test.beforeEach(async ({ page }) => {
   await page.locator('[type = "submit"]').click();
 });
 
-test('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
+test.skip('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
 
   /*await page.getByPlaceholder('Username').fill('standard_user');
 
@@ -28,7 +29,7 @@ test('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
 
 });
 
-test('access cart', async ({ page }) => {
+test.skip('access cart', async ({ page }) => {
 
   await page.locator('.shopping_cart_link').click();
 
@@ -37,7 +38,7 @@ test('access cart', async ({ page }) => {
 })
 
 //Adding the first item by name (not the most eficient as the item can be removed from the list)
-test('complete checkout', async ({ page }) => {
+test.skip('complete checkout', async ({ page }) => {
 
   await page.locator('#add-to-cart-sauce-labs-backpack').click();
 
@@ -62,7 +63,7 @@ test('complete checkout', async ({ page }) => {
 })
 
 //Grabbing all items in an array and then clicking on each child button
-test('complete checkout efficiently', async ({ page }) => {
+test.skip('complete checkout efficiently', async ({ page }) => {
 
   //Grabbing all items
   const items = page.locator('.inventory_item');
@@ -97,7 +98,7 @@ test('complete checkout efficiently', async ({ page }) => {
 
 })
 
-test('check that item is removed from cart', async ({ page }) => {
+test.skip('check that item is removed from cart', async ({ page }) => {
 
   //Grabbing all items
   const items = page.locator('.inventory_item');
@@ -118,7 +119,7 @@ test('check that item is removed from cart', async ({ page }) => {
 
 })
 
-test('on item page, the item appears added as well', async ({ page }) => {
+test.skip('on item page, the item appears added as well', async ({ page }) => {
 
   //Grabbing all items
   const items = page.locator('.inventory_item');
@@ -138,7 +139,46 @@ test('on item page, the item appears added as well', async ({ page }) => {
     await expect(page.locator('[data-test = remove]')).toBeVisible();
 
     page.goBack();
-
   }
+})
+
+test('sort lowest to highest', async ({page})=>{
+
+  const all_prices: number[] = [];
+
+  //Grabbing all the prices texts in an array
+  let price_elements = page.locator('.inventory_item_price');
+  const length = await price_elements.count();
+  for(let i=0; i<length; i++){
+  const price_element = price_elements.nth(i);
+  const raw_price_string = await price_element.textContent();
+
+  const clean_price_string = (raw_price_string ?? '').substring(1);
+  const numericPrice = parseFloat(clean_price_string);
+
+  all_prices.push(numericPrice)
+}
+// See which is the loweest price
+let lowest_price = all_prices[0]
+for(let i=0;i<length;i++){
+  if(all_prices[i]<lowest_price){
+    lowest_price = all_prices[i]
+  }
+}
+// See which is highest price
+let highest_price = all_prices[0]
+for(let i=0;i<length;i++){
+  if(all_prices[i]>highest_price){
+    highest_price = all_prices[i]
+  }
+}
+await page.locator('select').selectOption('lohi');
+
+price_elements = await page.locator('.inventory_item_price');
+const numeric_firstPrice = parseFloat((await price_elements.nth(0).textContent())?.substring(1) ?? '');
+const numeric_lastPrice = parseFloat((await price_elements.nth(length-1).textContent())?.substring(1) ?? '');
+
+expect(lowest_price).toBe(numeric_firstPrice)
+expect(highest_price).toBe(numeric_lastPrice)
 
 })

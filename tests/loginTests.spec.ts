@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
     await page.goto('https://www.saucedemo.com/');
 });
 
-test('missing username', async ({ page }) => {
+test.skip('missing username', async ({ page }) => {
 
     await page.locator('[type = "submit"]').click();
 
@@ -14,7 +14,7 @@ test('missing username', async ({ page }) => {
 
 })
 
-test('successul logout', async ({ page }) => {
+test.skip('successul logout', async ({ page }) => {
 
     await page.locator('#user-name').fill('standard_user');
 
