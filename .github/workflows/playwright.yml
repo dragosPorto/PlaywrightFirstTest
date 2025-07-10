@@ -1,5 +1,11 @@
 name: Playwright Tests
 on:
+  workflow_dispatch:
+    inputs:
+      test_subset:
+        description: "Select from tags: @smoke, @regression"
+        required: false
+        default: ""
   push:
     branches: [ main, master ]
   pull_request:
@@ -18,7 +24,13 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
-      run: npx playwright test
+      run: |
+        # Run the tests based on the provided test subset or run all tests
+        if [[ -n "${{ inputs.test_subset }}" ]]; then
+          npx playwright test --grep "${{ inputs.test_subset }}"
+        else
+          npx playwright test
+        fi
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
