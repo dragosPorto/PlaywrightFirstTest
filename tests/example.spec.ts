@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.app_logo', { hasText: 'Swag Labs' })).toBeVisible();
 });
 
-test.skip('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
+test('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
 
   /*await page.getByPlaceholder('Username').fill('standard_user');
 
@@ -26,7 +26,7 @@ test.skip('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
 
 });
 
-test.skip('access cart', async ({ page }) => {
+test.skip('access cart',{ tag: ['@regression'] }, async ({ page }) => {
 
   await page.locator('.shopping_cart_link').click();
 
