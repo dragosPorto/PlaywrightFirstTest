@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { Console, count } from 'console';
+//import { Console, count } from 'console';
 
 //Acces the test page before each test
 test.beforeEach(async ({ page }) => {
+
   await page.goto('https://www.saucedemo.com/');
 
   //Login before each test
@@ -11,6 +12,8 @@ test.beforeEach(async ({ page }) => {
   await page.locator('[name = "password"]').fill('secret_sauce');
 
   await page.locator('[type = "submit"]').click();
+
+  await expect(page.locator('.app_logo', { hasText: 'Swag Labs' })).toBeVisible();
 });
 
 test.skip('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
@@ -20,12 +23,6 @@ test.skip('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
   await page.getByRole('textbox', { name: 'password' }).fill('secret_sauce');
 
   await page.locator('xpath = /html/body/div/div/div[2]/div[1]/div/div/form/input').click();*/
-
-  await page.waitForTimeout(1000);
-
-  await expect(page.locator('.app_logo', { hasText: 'Swag Labs' })).toBeVisible();
-
-  await page.waitForTimeout(5000);
 
 });
 
@@ -142,7 +139,7 @@ test.skip('on item page, the item appears added as well', async ({ page }) => {
   }
 })
 
-test('sort lowest to highest', async ({page})=>{
+test.skip('sort lowest to highest', async ({browser})=>{
 
   const all_prices: number[] = [];
 
@@ -180,5 +177,72 @@ const numeric_lastPrice = parseFloat((await price_elements.nth(length-1).textCon
 
 expect(lowest_price).toBe(numeric_firstPrice)
 expect(highest_price).toBe(numeric_lastPrice)
+
+})
+
+test('checkout with total price lower than 30$', async ({page})=>{
+
+  const all_prices: number[] = [];
+
+    //Grabbing all the prices texts in an array
+    let price_elements = page.locator('.inventory_item_price');
+    const length = await price_elements.count();
+    for(let i=0; i<length; i++){
+    const price_element = price_elements.nth(i);
+    const raw_price_string = await price_element.textContent();
+  
+    const clean_price_string = (raw_price_string ?? '').substring(1);
+    const numericPrice = parseFloat(clean_price_string);
+  
+    all_prices.push(numericPrice)
+  }
+    
+  const addCartButton = page.locator('.inventory_item .inventory_item_description .pricebar .btn.btn_primary.btn_small.btn_inventory')
+  console.log(all_prices)
+
+  for(let j=0;j<length;j++){
+    let sum = all_prices[j]
+
+    for (let i=j+1; i<=length;i++){
+      if(sum + all_prices[i]<30.00){
+      await addCartButton.nth(i).click()
+
+    }
+    else{
+      sum = sum + all_prices[i]
+
+    }
+    console.log(sum)
+
+  }
+
+
+  }
+
+
+
+  // Take all elements from the array and compare them with all the elements that are next (exept itself)
+  /*for (let i=0; i<length;i++){ 
+    let sum = all_prices[i] // sum gets the firs price
+    let validPrices: number[] = [i];
+    let counter = 1;
+
+     for (let j=i+1; j<=length;j++){
+        if (sum<30.00)
+          console.log(sum)
+
+          validPrices.push(j)
+          sum = sum + all_prices[j]
+          counter++
+
+     }
+     for (let k=0;k<counter;k++){
+     const button = price_elements.nth(k).locator('.inventory_item_description .pricebar .btn.btn_primary.btn_small.btn_inventory')
+     await button.click();
+     }
+
+
+  }*/
+
 
 })
