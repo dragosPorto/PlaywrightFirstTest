@@ -26,7 +26,7 @@ test('get started link new', { tag: ['@smoke'] }, async ({ page }) => {
 
 });
 
-test.skip('access cart',{ tag: ['@regression'] }, async ({ page }) => {
+test.skip('access cart', { tag: ['@regression'] }, async ({ page }) => {
 
   await page.locator('.shopping_cart_link').click();
 
@@ -139,110 +139,146 @@ test.skip('on item page, the item appears added as well', async ({ page }) => {
   }
 })
 
-test.skip('sort lowest to highest', async ({browser})=>{
+test.skip('sort lowest to highest', async ({ page }) => {
 
   const all_prices: number[] = [];
 
   //Grabbing all the prices texts in an array
   let price_elements = page.locator('.inventory_item_price');
   const length = await price_elements.count();
-  for(let i=0; i<length; i++){
-  const price_element = price_elements.nth(i);
-  const raw_price_string = await price_element.textContent();
+  for (let i = 0; i < length; i++) {
+    const price_element = price_elements.nth(i);
+    const raw_price_string = await price_element.textContent();
 
-  const clean_price_string = (raw_price_string ?? '').substring(1);
-  const numericPrice = parseFloat(clean_price_string);
+    const clean_price_string = (raw_price_string ?? '').substring(1);
+    const numericPrice = parseFloat(clean_price_string);
 
-  all_prices.push(numericPrice)
-}
-// See which is the loweest price
-let lowest_price = all_prices[0]
-for(let i=0;i<length;i++){
-  if(all_prices[i]<lowest_price){
-    lowest_price = all_prices[i]
+    all_prices.push(numericPrice)
   }
-}
-// See which is highest price
-let highest_price = all_prices[0]
-for(let i=0;i<length;i++){
-  if(all_prices[i]>highest_price){
-    highest_price = all_prices[i]
+  // See which is the loweest price
+  let lowest_price = all_prices[0]
+  for (let i = 0; i < length; i++) {
+    if (all_prices[i] < lowest_price) {
+      lowest_price = all_prices[i]
+    }
   }
-}
-await page.locator('select').selectOption('lohi');
+  // See which is highest price
+  let highest_price = all_prices[0]
+  for (let i = 0; i < length; i++) {
+    if (all_prices[i] > highest_price) {
+      highest_price = all_prices[i]
+    }
+  }
+  await page.locator('select').selectOption('lohi');
 
-price_elements = await page.locator('.inventory_item_price');
-const numeric_firstPrice = parseFloat((await price_elements.nth(0).textContent())?.substring(1) ?? '');
-const numeric_lastPrice = parseFloat((await price_elements.nth(length-1).textContent())?.substring(1) ?? '');
+  price_elements = await page.locator('.inventory_item_price');
+  const numeric_firstPrice = parseFloat((await price_elements.nth(0).textContent())?.substring(1) ?? '');
+  const numeric_lastPrice = parseFloat((await price_elements.nth(length - 1).textContent())?.substring(1) ?? '');
 
-expect(lowest_price).toBe(numeric_firstPrice)
-expect(highest_price).toBe(numeric_lastPrice)
+  expect(lowest_price).toBe(numeric_firstPrice)
+  expect(highest_price).toBe(numeric_lastPrice)
 
 })
 
-test('checkout with total price lower than 30$', async ({page})=>{
+test('checkout with total price lower than 30$', async ({ page }) => {
 
   const all_prices: number[] = [];
 
-    //Grabbing all the prices texts in an array
-    let price_elements = page.locator('.inventory_item_price');
-    const length = await price_elements.count();
-    for(let i=0; i<length; i++){
+  //Grabbing all the prices texts in an array
+  let price_elements = page.locator('.inventory_item_price');
+  const length = await price_elements.count();
+  for (let i = 0; i < length; i++) {
     const price_element = price_elements.nth(i);
     const raw_price_string = await price_element.textContent();
-  
+
     const clean_price_string = (raw_price_string ?? '').substring(1);
     const numericPrice = parseFloat(clean_price_string);
-  
+
     all_prices.push(numericPrice)
   }
-    
+
   const addCartButton = page.locator('.inventory_item .inventory_item_description .pricebar .btn.btn_primary.btn_small.btn_inventory')
-  console.log(all_prices)
 
-  for(let j=0;j<length;j++){
-    let sum = all_prices[j]
+  let formattedPricesList = all_prices.filter(price => price < 30);
+  const formaterdLength = formattedPricesList.length
+  console.log(formattedPricesList)
 
-    for (let i=j+1; i<=length;i++){
-      if(sum + all_prices[i]<30.00){
-      await addCartButton.nth(i).click()
 
+/*
+  let sum
+
+  for (let i = 0; i < formaterdLength; i++) {
+    sum = formattedPricesList[i]
+    if (sum < 30) {
+      successArray = [i]
     }
-    else{
-      sum = sum + all_prices[i]
+      for (let j = 0; j < formaterdLength; j++) {
+        
+        if (sum + formattedPricesList[j]< 30 && i!=j) {
+          sum = sum + formattedPricesList[j]
+          successArray.push(j)
+        }
 
-    }
-    console.log(sum)
-
+      }
+      console.log(successArray)
   }
 
+ */
 
+const targetPrice = 40
+let successArray:number [] [] = []
+
+
+// Loop through all possible combinations (except the empty one)
+for (let mask = 1; mask < (1 << formaterdLength); mask++) {
+  let sum = 0;
+  let indexes: number[] = [];
+
+  for (let i = 0; i < formaterdLength; i++) {
+    if (mask & (1 << i)) {
+      sum += formattedPricesList[i];
+      indexes.push(i);
+    }
   }
 
+  if (sum < targetPrice) {
+    successArray.push(indexes);
+  }
+}
+
+console.log(`All valid index combinations under ${targetPrice}:`);
+console.log(successArray);
 
 
-  // Take all elements from the array and compare them with all the elements that are next (exept itself)
-  /*for (let i=0; i<length;i++){ 
-    let sum = all_prices[i] // sum gets the firs price
-    let validPrices: number[] = [i];
-    let counter = 1;
 
-     for (let j=i+1; j<=length;j++){
-        if (sum<30.00)
-          console.log(sum)
-
-          validPrices.push(j)
-          sum = sum + all_prices[j]
-          counter++
-
-     }
-     for (let k=0;k<counter;k++){
-     const button = price_elements.nth(k).locator('.inventory_item_description .pricebar .btn.btn_primary.btn_small.btn_inventory')
-     await button.click();
-     }
-
-
-  }*/
 
 
 })
+
+
+
+
+// Take all elements from the array and compare them with all the elements that are next (exept itself)
+/*for (let i=0; i<length;i++){
+  let sum = all_prices[i] // sum gets the firs price
+  let validPrices: number[] = [i];
+  let counter = 1;
+
+   for (let j=i+1; j<=length;j++){
+      if (sum<30.00)
+        console.log(sum)
+
+        validPrices.push(j)
+        sum = sum + all_prices[j]
+        counter++
+
+   }
+   for (let k=0;k<counter;k++){
+   const button = price_elements.nth(k).locator('.inventory_item_description .pricebar .btn.btn_primary.btn_small.btn_inventory')
+   await button.click();
+   }
+
+
+}*/
+
+
